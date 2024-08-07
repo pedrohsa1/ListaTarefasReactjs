@@ -1,6 +1,9 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function App(){
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const firstRender = useRef(true);
 
   const [input, setInput] = useState("");
   const [tasks, setTasks] = useState<string[]>([])
@@ -20,6 +23,17 @@ export default function App(){
 
   }, [])
 
+  useEffect(() => {
+    if(firstRender.current){
+      firstRender.current = false;
+      return;
+    }
+
+    localStorage.setItem("@cursoreact", JSON.stringify(tasks))
+    console.log("useEffect foi chamado!")
+
+  }, [tasks]);
+
 
   function handleRegister(){
     if(!input){
@@ -35,7 +49,6 @@ export default function App(){
 
     setTasks(tarefas => [...tarefas, input])
     setInput("")
-    localStorage.setItem("@cursoreact", JSON.stringify([...tasks, input]))
 
   }
 
@@ -51,17 +64,18 @@ export default function App(){
       task: ''
     })
     setInput("")
-    localStorage.setItem("@cursoreact", JSON.stringify(allTasks))
 
   }
 
   function handleDelete(item: string){
     const removeTask = tasks.filter( task => task !== item)
     setTasks(removeTask)
-    localStorage.setItem("@cursoreact", JSON.stringify(removeTask))
   }
 
   function handleEdit(item: string){
+
+    inputRef.current?.focus();
+
     setInput(item)
     setEditTask({
       enabled: true,
@@ -78,6 +92,7 @@ export default function App(){
         placeholder="Digite o nome da tarefa..."
         value={input}
         onChange={ (e) => setInput(e.target.value) }
+        ref={inputRef}
       />
       <button onClick={handleRegister}>
         {editTask.enabled ? "Atualizar tarefa" : "Adicionar tarefa"}
